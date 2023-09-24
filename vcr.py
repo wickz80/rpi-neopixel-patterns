@@ -8,11 +8,8 @@ PIXEL_COUNT = 256
 PIXEL_WIDTH = 32
 PIXEL_HEIGHT = 8
 
-CHAR_WIDTH = 5
-CHAR_SPACING = 1
-
 pixels = neopixel.NeoPixel(
-    board.D18, PIXEL_COUNT, brightness=0.05, auto_write=False
+    board.D18, PIXEL_COUNT, brightness=0.15, auto_write=False
 )
 
 pixel_framebuf = PixelFramebuffer(
@@ -42,7 +39,7 @@ class Square:
             "color": 0x00FF00,
             "trailing": False,
             # only works with Size = 1
-            "edge_hit_ghosting": True
+            "edge_hit_ghosting": False
         }
         kwargs = {**default_kwargs, **kwargs}
 
@@ -106,19 +103,19 @@ class Square:
 
 
 objects = []
-for _ in range(1):
+for _ in range(25):
     position = (randint(0, PIXEL_WIDTH), randint(0, PIXEL_HEIGHT))
 
     objects.append(
-        Square(4,
+        Square(1,
                position=(1, 1),
                color=0x0000FF,
-               delta_x=1,
-               delta_y=1
-               # delta_x = randint(-2,2),
-               # delta_y = randint(-1,1)
+               delta_x=randint(-3, 3),
+               delta_y=randint(-2, 2),
+               edge_hit_ghosting=True
                )
     )
+
 
 while True:
     try:
@@ -127,7 +124,7 @@ while True:
 
         pixel_framebuf.display()
 
-        time.sleep(0.2)
+        time.sleep(0.1)
 
     except KeyboardInterrupt:
         pixel_framebuf.fill(0x000000)

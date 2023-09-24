@@ -15,7 +15,7 @@ pixels = neopixel.NeoPixel(
     board.D18, PIXEL_COUNT, brightness=0.05, auto_write=False
 )
 
-pixel_framebuf = PixelFramebuffer(
+buffer = PixelFramebuffer(
     pixels,
     PIXEL_WIDTH,
     PIXEL_HEIGHT,
@@ -30,44 +30,147 @@ def rgb2hex(c):
     return int("0x{:02x}{:02x}{:02x}".format(c[0], c[1], c[2]), 16)
 
 
+def rotate_matrix(matrix):
+    if not matrix:
+        return []
+
+    # Transpose the matrix
+    transposed_matrix = [[matrix[j][i] for j in range(
+        len(matrix))] for i in range(len(matrix[0]))]
+
+    # Reverse the order of rows to get the 90-degree clockwise rotated matrix
+    rotated_matrix = [tuple(row[::-1]) for row in transposed_matrix]
+
+    return rotated_matrix
+
+
 start = [
-    (0, 0, 1, 1),
-    (0, 1, 1, 0),
     (1, 1, 0, 0),
-    (0, 1, 1, 0),
+    (1, 0, 1, 0),
+    (0, 1, 0, 1),
+    (0, 0, 1, 1),
 ]
 
-rotated90 = [
-    (0, 1, 0, 0),
-    (1, 1, 1, 0),
-    (1, 0, 1, 1),
-    (0, 0, 0, 1),
+sword = [
+    (0, 0, 0, 1, 0, 0, 0),
+    (0, 0, 1, 1, 0, 0, 0),
+    (0, 0, 1, 1, 0, 0, 0),
+    (0, 0, 1, 1, 0, 0, 0),
+    (0, 0, 1, 1, 0, 0, 0),
+    (0, 0, 1, 1, 0, 0, 0),
+    (0, 0, 0, 1, 0, 0, 0),
+    (0, 0, 0, 1, 0, 0, 0),
 ]
 
-rot = []
-for tup in start[::-1]:
-    for num in tup:
+apple = [
+    (0, 0, 1, 1, 0, 0),
+    (0, 1, 1, 1, 1, 0),
+    (1, 1, 1, 1, 1, 1),
+    (1, 1, 1, 1, 1, 1),
+    (0, 1, 1, 1, 1, 0),
+    (0, 0, 1, 1, 0, 0),
+]
+pizza = [
+    (1, 1, 1, 1, 1, 1),
+    (1, 1, 0, 0, 1, 1),
+    (1, 1, 0, 0, 1, 1),
+    (1, 1, 1, 1, 1, 1),
+    (0, 0, 0, 0, 0, 0),
+    (0, 0, 0, 0, 0, 0),
+]
+hamburger = [
+    (0, 0, 1, 1, 0, 0),
+    (0, 1, 1, 1, 1, 0),
+    (1, 1, 1, 1, 1, 1),
+    (1, 1, 1, 1, 1, 1),
+    (0, 1, 1, 1, 1, 0),
+    (0, 0, 1, 1, 0, 0),
+]
+ice_cream = [
+    (0, 0, 1, 1, 0, 0),
+    (0, 1, 1, 1, 1, 0),
+    (1, 1, 1, 1, 1, 1),
+    (0, 1, 1, 1, 1, 0),
+    (0, 0, 0, 0, 0, 0),
+    (0, 0, 0, 0, 0, 0),
+]
+banana = [
+    (0, 1, 1, 0, 0, 0),
+    (1, 1, 1, 1, 0, 0),
+    (1, 1, 1, 1, 0, 0),
+    (0, 1, 1, 1, 0, 0),
+    (0, 0, 0, 1, 0, 0),
+    (0, 0, 0, 1, 0, 0),
+]
+
+ocean_waves = [
+    (0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0,
+     0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+    (0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0,
+     0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0),
+    (0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0,
+     0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0),
+    (0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+     0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0),
+    (0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+     0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0),
+    (0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+     0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0),
+    (0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+     1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0),
+    (0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0)
+]
 
 
-objects = []
-for _ in range(1):
-    position = (randint(0, PIXEL_WIDTH), randint(0, PIXEL_HEIGHT))
+def fill_custom(custom, buffer: PixelFramebuffer):
+    pos = (2, 2)
 
-    objects.append(
-        Square(3,
-               position=(1, 1),
-               color=0x0000FF,
-               delta_x=1,
-               delta_y=1
-               # delta_x = randint(-2,2),
-               # delta_y = randint(-1,1)
-               )
-    )
+    for (x, t) in enumerate(custom):
+        for (y, v) in enumerate(t):
+            if not v:
+                continue
+
+            buffer.pixel(x, y, 0xFF00FF)
+            buffer.display()
+
+
+def fill_custom_swap(custom, buffer: PixelFramebuffer):
+    pos = (2, 2)
+
+    for (x, t) in enumerate(custom):
+        for (y, v) in enumerate(t):
+            if not v:
+                continue
+
+            buffer.pixel(y, x, 0xFF00FF)
+            buffer.display()
+
+
+def clear():
+    buffer.fill(0x000000)
+    buffer.display()
+
+
+shapes = [start, sword, apple, pizza, hamburger, ice_cream, banana]
 
 while True:
-    for obj in objects:
-        obj.move(pixel_framebuf)
+    try:
+        # for shape in shapes:
 
-    pixel_framebuf.display()
+        #     fill_custom(shape, buffer)
+        #     time.sleep(1)
+        #     clear()
 
-    time.sleep(0.2)
+        #     fill_custom(rotate_matrix(shape), buffer)
+        #     time.sleep(1)
+        #     clear()
+
+        fill_custom_swap(ocean_waves, buffer)
+        time.sleep(10)
+        clear()
+
+    except KeyboardInterrupt:
+        buffer.fill(0x000000)
+        buffer.display()
+        break
